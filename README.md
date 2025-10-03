@@ -1,2 +1,2 @@
-# monexa
+# Monexa
 MONey + EXpenses + Analysis
