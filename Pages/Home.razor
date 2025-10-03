@@ -1,7 +1,281 @@
 ﻿@page "/"
+@using monexa.Models
 
-<PageTitle>Home</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-4">
+    <!-- Übersichtskarten -->
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Gesamtvermögen</MudText>
+                            <MudText Typo="Typo.h5">€24.580,50</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">+12,5% vs. Vormonat</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+                
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Einnahmen</MudText>
+                            <MudText Typo="Typo.h5">€3.450,00</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Success">+5,2% vs. Vormonat</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Large" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+                
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Ausgaben</MudText>
+                            <MudText Typo="Typo.h5">€2.180,30</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Error">+8,1% vs. Vormonat</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingDown" Color="Color.Error" Size="Size.Large" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+                
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Budget übrig</MudText>
+                            <MudText Typo="Typo.h5">€1.269,70</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Info">58% von €2.200</MudText>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Savings" Color="Color.Info" Size="Size.Large" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+            
+    <!-- Charts und Tabellen -->
+    <MudGrid Class="mt-4">
+        <MudItem xs="12" md="8">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Finanzübersicht</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudChart ChartType="ChartType.Line" 
+                              ChartSeries="@_chartSeries" 
+                              XAxisLabels="@_xAxisLabels" 
+                              Width="100%" 
+                              Height="300px" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+                
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">Ausgaben nach Kategorie</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudChart ChartType="ChartType.Donut" 
+                              InputData="@_categoryData" 
+                              InputLabels="@_categoryLabels" 
+                              Width="100%" 
+                              Height="300px" />
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+            
+    <!-- Letzte Transaktionen -->
+    <MudPaper Elevation="2" Class="mt-4 pa-4">
+        <MudText Typo="Typo.h6" Class="mb-4">Letzte Transaktionen</MudText>
+        <MudTable Items="@_recentTransactions" Hover="true" Breakpoint="Breakpoint.Sm">
+            <HeaderContent>
+                <MudTh>Datum</MudTh>
+                <MudTh>Beschreibung</MudTh>
+                <MudTh>Kategorie</MudTh>
+                <MudTh>Konto</MudTh>
+                <MudTh Style="text-align: right">Betrag</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Datum">@context.Date.ToString("dd.MM.yyyy")</MudTd>
+                <MudTd DataLabel="Beschreibung">@context.Description</MudTd>
+                <MudTd DataLabel="Kategorie">
+                    <MudChip T="string" Size="Size.Small" Color="@context.CategoryColor">@context.Category</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Konto">@context.Account</MudTd>
+                <MudTd DataLabel="Betrag" Style="text-align: right">
+                    <MudText Color="@(context.Amount >= 0 ? Color.Success : Color.Error)" Typo="Typo.body2">
+                        @context.Amount.ToString("C2")
+                    </MudText>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
 
-<h1>Hello, world!</h1>
+@code{
 
-Welcome to Monexa!
+    private readonly ChartOptions _chartOptions = new()
+    {
+        YAxisTicks = 500,
+        MaxNumYAxisTicks = 10,
+        YAxisFormat = "C0"
+    };
+
+    private List<ChartSeries> _chartSeries = new();
+    private string[] _xAxisLabels = Array.Empty<string>();
+    private double[] _categoryData = Array.Empty<double>();
+    private string[] _categoryLabels = Array.Empty<string>();
+    
+    private List<Project> _projects = new();
+    private List<FinancialStat> _financialStats = new();
+    private List<Transaction> _recentTransactions = new();
+
+    protected override void OnInitialized()
+    {
+        InitializeProjects();
+        InitializeFinancialStats();
+        InitializeChartData();
+        InitializeTransactions();
+    }
+
+    private void InitializeProjects()
+    {
+        _projects = new List<Project>
+        {
+            new() { Name = "Privat", Icon = Icons.Material.Filled.Home },
+            new() { Name = "Geschäftlich", Icon = Icons.Material.Filled.Business },
+            new() { Name = "Investments", Icon = Icons.Material.Filled.Savings }
+        };
+    }
+
+    private void InitializeFinancialStats()
+    {
+        _financialStats = new List<FinancialStat>
+        {
+            new()
+            {
+                Title = "Gesamtvermögen",
+                Value = 24580.50m,
+                TrendText = "+12,5% vs. Vormonat",
+                TrendColor = Color.Success,
+                Icon = Icons.Material.Filled.AccountBalance,
+                IconColor = Color.Primary
+            },
+            new()
+            {
+                Title = "Einnahmen",
+                Value = 3450.00m,
+                TrendText = "+5,2% vs. Vormonat",
+                TrendColor = Color.Success,
+                Icon = Icons.Material.Filled.TrendingUp,
+                IconColor = Color.Success
+            },
+            new()
+            {
+                Title = "Ausgaben",
+                Value = 2180.30m,
+                TrendText = "+8,1% vs. Vormonat",
+                TrendColor = Color.Error,
+                Icon = Icons.Material.Filled.TrendingDown,
+                IconColor = Color.Error
+            },
+            new()
+            {
+                Title = "Budget übrig",
+                Value = 1269.70m,
+                TrendText = "58% von €2.200",
+                TrendColor = Color.Info,
+                Icon = Icons.Material.Filled.Savings,
+                IconColor = Color.Info
+            }
+        };
+    }
+
+    private void InitializeChartData()
+    {
+        _chartSeries = new List<ChartSeries>
+        {
+            new() { Name = "Einnahmen", Data = new double[] { 3200, 3400, 3100, 3600, 3450 } },
+            new() { Name = "Ausgaben", Data = new double[] { 2100, 1900, 2400, 2000, 2180 } }
+        };
+
+        _xAxisLabels = new[] { "Aug", "Sep", "Okt", "Nov", "Dez" };
+
+        _categoryData = new double[] { 650, 420, 380, 280, 230, 220 };
+        _categoryLabels = new[] { "Lebensmittel", "Transport", "Unterhaltung", "Shopping", "Gesundheit", "Sonstiges" };
+    }
+
+    private void InitializeTransactions()
+    {
+        _recentTransactions = new List<Transaction>
+        {
+            new()
+            {
+                Date = DateTime.Now.AddDays(-1),
+                Description = "Supermarkt Rewe",
+                Category = "Lebensmittel",
+                CategoryColor = Color.Success,
+                Account = "Girokonto",
+                Amount = -85.50m
+            },
+            new()
+            {
+                Date = DateTime.Now.AddDays(-2),
+                Description = "Gehalt",
+                Category = "Einkommen",
+                CategoryColor = Color.Primary,
+                Account = "Girokonto",
+                Amount = 3450.00m
+            },
+            new()
+            {
+                Date = DateTime.Now.AddDays(-3),
+                Description = "Netflix",
+                Category = "Unterhaltung",
+                CategoryColor = Color.Info,
+                Account = "Kreditkarte",
+                Amount = -15.99m
+            },
+            new()
+            {
+                Date = DateTime.Now.AddDays(-4),
+                Description = "Tankstelle",
+                Category = "Transport",
+                CategoryColor = Color.Warning,
+                Account = "Girokonto",
+                Amount = -65.00m
+            },
+            new()
+            {
+                Date = DateTime.Now.AddDays(-5),
+                Description = "Amazon",
+                Category = "Shopping",
+                CategoryColor = Color.Secondary,
+                Account = "Kreditkarte",
+                Amount = -124.99m
+            }
+        };
+    }
+
+}

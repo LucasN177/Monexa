@@ -1,16 +1,172 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+﻿@using monexa.Models
+@inherits LayoutComponentBase
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudText Typo="Typo.h4" Class="ml-3">Monexa</MudText>
+        <MudSpacer />
+        
+        <MudMenu Icon="@Icons.Material.Filled.Folder" Color="Color.Inherit" Dense="true" AnchorOrigin="Origin.BottomCenter">
+            <MudText Typo="Typo.subtitle2" Class="px-4 py-2">Projekt wählen</MudText>
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.Home">Privat</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Business">Geschäftlich</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Savings">Investments</MudMenuItem>
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.Add">Neues Projekt</MudMenuItem>
+        </MudMenu>
+        
+        <MudTooltip Text="@(_isDarkMode ? "Light Mode" : "Dark Mode")">
+            <MudIconButton Icon="@(_isDarkMode ? @Icons.Material.Filled.LightMode : @Icons.Material.Filled.DarkMode)" 
+                           Color="Color.Inherit" 
+                           OnClick="@ToggleDarkMode" />
+        </MudTooltip>
+        
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Dense="true">
+            <MudMenuItem Icon="@Icons.Material.Filled.Person">Profil</MudMenuItem>
+            <MudMenuItem Icon="@Icons.Material.Filled.Settings">Einstellungen</MudMenuItem>
+            <MudDivider />
+            <MudMenuItem Icon="@Icons.Material.Filled.Logout">Abmelden</MudMenuItem>
+        </MudMenu>
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" ClipMode="DrawerClipMode.Always">
+        <MudDrawerHeader>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h6">Monexa</MudText>
+            </MudStack>
+        </MudDrawerHeader>
+        
+        <MudNavMenu>
+            <MudNavLink Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Primary">Dashboard</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.AccountBalance" IconColor="Color.Success">Konten</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Receipt" IconColor="Color.Info">Transaktionen</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Category" IconColor="Color.Warning">Kategorien</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.TrendingUp" IconColor="Color.Tertiary">Budgets</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.BarChart" IconColor="Color.Secondary">Analysen</MudNavLink>
+            
+            <MudDivider Class="my-2" />
+            
+            <MudNavGroup Title="Berichte" Icon="@Icons.Material.Filled.Assessment" Expanded="false">
+                <MudNavLink Icon="@Icons.Material.Filled.CalendarMonth">Monatsbericht</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.CalendarToday">Jahresbericht</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.CompareArrows">Vergleiche</MudNavLink>
+            </MudNavGroup>
+            
+            <MudNavGroup Title="Einstellungen" Icon="@Icons.Material.Filled.Settings" Expanded="false">
+                <MudNavLink Icon="@Icons.Material.Filled.Person">Profil</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.Notifications">Benachrichtigungen</MudNavLink>
+                <MudNavLink Icon="@Icons.Material.Filled.Security">Sicherheit</MudNavLink>
+            </MudNavGroup>
+        </MudNavMenu>
+    </MudDrawer>
+    
+    <MudMainContent Class="pt-4" Style="margin-top: 50px">
+     @Body   
+    </MudMainContent>
+</MudLayout>
+
+
+@code{
+    
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private bool _isDarkMode = true;
+    private bool _drawerOpen = true;
+    private string _currentProject = "Privat";
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1976d2",
+            Secondary = "#9c27b0",
+            Success = "#4caf50",
+            Info = "#2196f3",
+            Warning = "#ff9800",
+            Error = "#f44336",
+            AppbarBackground = "#1976d2"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#90caf9",
+            Secondary = "#ce93d8",
+            Success = "#81c784",
+            Info = "#64b5f6",
+            Warning = "#ffb74d",
+            Error = "#e57373",
+            AppbarBackground = "#1e1e1e",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            BackgroundGray = "#1a1a1a",
+            DrawerBackground = "#1e1e1e"
+        }
+    };
+
+    
+
+    private void ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+    
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void SelectProject(Project project)
+    {
+        _currentProject = project.Name;
+        Snackbar.Add($"Projekt '{project.Name}' ausgewählt", Severity.Info);
+        // Hier würden Sie die Daten für das ausgewählte Projekt laden
+    }
+
+    private void CreateNewProject()
+    {
+        Snackbar.Add("Neues Projekt erstellen - Dialog öffnen", Severity.Normal);
+        // Hier würden Sie einen Dialog zum Erstellen eines neuen Projekts öffnen
+    }
+
+    private void NavigateToProfile()
+    {
+        NavigationManager.NavigateTo("/settings/profile");
+    }
+
+    private void NavigateToSettings()
+    {
+        NavigationManager.NavigateTo("/settings");
+    }
+
+    private void NavigateToAllTransactions()
+    {
+        NavigationManager.NavigateTo("/transactions");
+    }
+
+    private async Task Logout()
+    {
+        // Hier würden Sie die Logout-Logik implementieren
+        Snackbar.Add("Abgemeldet", Severity.Success);
+        await Task.Delay(500);
+        NavigationManager.NavigateTo("/login");
+    }
+
+}
