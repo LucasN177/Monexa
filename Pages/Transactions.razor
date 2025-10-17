@@ -1,0 +1,205 @@
+@page "/transaktionen"
+@using System.ComponentModel.DataAnnotations
+@using monexa.Models.Enums
+
+<PageTitle>Transaktionen</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Transaktionen</MudText>
+
+    <!-- Statistik Cards -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Color="Color.Dark">Einnahmen (Monat)</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Success">
+                        @GetMonthlyIncome().ToString("C", new System.Globalization.CultureInfo("de-DE"))
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Color="Color.Dark">Ausgaben (Monat)</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Error">
+                        @GetMonthlyExpenses().ToString("C", new System.Globalization.CultureInfo("de-DE"))
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Color="Color.Dark">Saldo (Monat)</MudText>
+                    <MudText Typo="Typo.h5" Color="@(GetMonthlySaldo() >= 0 ? Color.Success : Color.Error)">
+                        @GetMonthlySaldo().ToString("C", new System.Globalization.CultureInfo("de-DE"))
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.body2" Color="Color.Dark">Transaktionen</MudText>
+                    <MudText Typo="Typo.h5">@GetFilteredTransactions().Count()</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Filter und Action Bar -->
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="3">
+                <MudTextField @bind-Value="searchString" 
+                              Placeholder="Suchen..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              Immediate="true"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"/>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="2">
+                <MudSelect @bind-Value="selectedAccount" 
+                           Label="Konto" 
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    @foreach (var account in accounts)
+                    {
+                        <MudSelectItem Value="@account.Id">@account.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="2">
+                <MudSelect @bind-Value="selectedCategory" 
+                           Label="Kategorie" 
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    @foreach (TransactionCategory category in Enum.GetValues(typeof(TransactionCategory)))
+                    {
+                        <MudSelectItem Value="@((int?)category)">@GetCategoryText(category)</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="2">
+                <MudSelect @bind-Value="selectedType" 
+                           Label="Typ" 
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Clearable="true">
+                    <MudSelectItem Value="@((TransactionType?)TransactionType.Einnahme)">Einnahme</MudSelectItem>
+                    <MudSelectItem Value="@((TransactionType?)TransactionType.Ausgabe)">Ausgabe</MudSelectItem>
+                    <MudSelectItem Value="@((TransactionType?)TransactionType.Umbuchung)">Umbuchung</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End" Style="height: 100%;">
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.FilterAltOff"
+                               OnClick="ClearFilters"
+                               FullWidth="true">
+                        Filter zurücksetzen
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Href="transaktionen/neu"
+                               FullWidth="true">
+                        Neue Transaktion
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Transaktionen Timeline/Liste -->
+    <MudPaper Elevation="2">
+        @if (!GetFilteredTransactions().Any())
+        {
+            <div class="pa-8" style="text-align: center;">
+                <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Large" Color="Color.Default" Class="mb-2"/>
+                <MudText Typo="Typo.h6">Keine Transaktionen gefunden</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Default">
+                    Ändern Sie die Filter oder erstellen Sie eine neue Transaktion
+                </MudText>
+            </div>
+        }
+        else
+        {
+            @foreach (var group in GetGroupedTransactions())
+            {
+                <MudPaper Class="pa-4" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="mb-3">@group.Key</MudText>
+                    <MudDivider Class="mb-3"/>
+                    
+                    @foreach (var transaction in group)
+                    {
+                        <MudCard Class="mb-2" Elevation="0" Outlined="true">
+                            <MudCardContent Class="py-3">
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6" md="3">
+                                        <MudStack Spacing="1">
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudIcon Icon="@GetCategoryIcon(transaction.Category)" 
+                                                         Size="Size.Small" 
+                                                         Color="@GetTransactionTypeColor(transaction.Type)"/>
+                                                <MudText Typo="Typo.body1"><strong>@transaction.Description</strong></MudText>
+                                            </MudStack>
+                                            <MudText Typo="Typo.body2" Color="Color.Default">
+                                                <MudChip Size="Size.Small" Variant="Variant.Text" Color="@GetCategoryColor(transaction.Category)">
+                                                    @GetCategoryText(transaction.Category)
+                                                </MudChip>
+                                            </MudText>
+                                        </MudStack>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="3" md="2">
+                                        <MudText Typo="Typo.caption" Color="Color.Default">Konto</MudText>
+                                        <MudText Typo="Typo.body2">@GetAccountName(transaction.AccountId)</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="3" md="2">
+                                        <MudText Typo="Typo.caption" Color="Color.Default">Datum</MudText>
+                                        <MudText Typo="Typo.body2">@transaction.Date.ToString("dd.MM.yyyy")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="6" md="2">
+                                        <MudText Typo="Typo.caption" Color="Color.Default">Betrag</MudText>
+                                        <MudText Typo="Typo.h6" Color="@GetTransactionTypeColor(transaction.Type)">
+                                            @GetFormattedAmount(transaction)
+                                        </MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="6" md="3" Style="text-align: right;">
+                                        <MudStack Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Center">
+                                            <MudChip Size="Size.Small" 
+                                                     Color="@GetTransactionTypeColor(transaction.Type)"
+                                                     Variant="Variant.Filled">
+                                                @transaction.Type.ToString()
+                                            </MudChip>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                                           Color="Color.Primary" 
+                                                           Size="Size.Small"
+                                                           Href="@($"/transaktionen/{transaction.Id}/bearbeiten")"/>
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                           Color="Color.Error" 
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => DeleteTransaction(transaction))"/>
+                                        </MudStack>
+                                    </MudItem>
+                                </MudGrid>
+                                @if (!string.IsNullOrWhiteSpace(transaction.Notes))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Default" Class="mt-2">
+                                        <em>@transaction.Notes</em>
+                                    </MudText>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudPaper>
+            }
+        }
+    </MudPaper>
+</MudContainer>
