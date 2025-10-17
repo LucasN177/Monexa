@@ -62,38 +62,38 @@
                               Margin="Margin.Dense"/>
             </MudItem>
             <MudItem xs="12" sm="6" md="2">
-                <MudSelect @bind-Value="selectedAccount" 
+                <MudSelect T="int?" @bind-Value="selectedAccount" 
                            Label="Konto" 
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Clearable="true">
                     @foreach (var account in accounts)
                     {
-                        <MudSelectItem Value="@account.Id">@account.Name</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@account.Id">@account.Name</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6" md="2">
-                <MudSelect @bind-Value="selectedCategory" 
+                <MudSelect T="int?" @bind-Value="selectedCategory" 
                            Label="Kategorie" 
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Clearable="true">
                     @foreach (TransactionCategory category in Enum.GetValues(typeof(TransactionCategory)))
                     {
-                        <MudSelectItem Value="@((int?)category)">@GetCategoryText(category)</MudSelectItem>
+                        <MudSelectItem T="int?" Value="@((int)category)">@GetCategoryText(category)</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6" md="2">
-                <MudSelect @bind-Value="selectedType" 
+                <MudSelect T="TransactionType?" @bind-Value="selectedType" 
                            Label="Typ" 
                            Variant="Variant.Outlined"
                            Margin="Margin.Dense"
                            Clearable="true">
-                    <MudSelectItem Value="@((TransactionType?)TransactionType.Einnahme)">Einnahme</MudSelectItem>
-                    <MudSelectItem Value="@((TransactionType?)TransactionType.Ausgabe)">Ausgabe</MudSelectItem>
-                    <MudSelectItem Value="@((TransactionType?)TransactionType.Umbuchung)">Umbuchung</MudSelectItem>
+                    <MudSelectItem T="TransactionType?" Value="@((TransactionType?)TransactionType.Einnahme)">Einnahme</MudSelectItem>
+                    <MudSelectItem T="TransactionType?" Value="@((TransactionType?)TransactionType.Ausgabe)">Ausgabe</MudSelectItem>
+                    <MudSelectItem T="TransactionType?" Value="@((TransactionType?)TransactionType.Umbuchung)">Umbuchung</MudSelectItem>
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6" md="3">
@@ -151,7 +151,7 @@
                                                 <MudText Typo="Typo.body1"><strong>@transaction.Description</strong></MudText>
                                             </MudStack>
                                             <MudText Typo="Typo.body2" Color="Color.Default">
-                                                <MudChip Size="Size.Small" Variant="Variant.Text" Color="@GetCategoryColor(transaction.Category)">
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@GetCategoryColor(transaction.Category)">
                                                     @GetCategoryText(transaction.Category)
                                                 </MudChip>
                                             </MudText>
@@ -173,7 +173,7 @@
                                     </MudItem>
                                     <MudItem xs="6" sm="6" md="3" Style="text-align: right;">
                                         <MudStack Row="true" Justify="Justify.FlexEnd" AlignItems="AlignItems.Center">
-                                            <MudChip Size="Size.Small" 
+                                            <MudChip T="string" Size="Size.Small" 
                                                      Color="@GetTransactionTypeColor(transaction.Type)"
                                                      Variant="Variant.Filled">
                                                 @transaction.Type.ToString()

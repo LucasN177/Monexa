@@ -20,7 +20,7 @@
     <!-- Typ-Auswahl (Schnellwahl) -->
     <MudPaper Class="pa-4 mb-4" Elevation="2">
         <MudText Typo="Typo.h6" Class="mb-3">Transaktionstyp</MudText>
-        <MudRadioGroup @bind-SelectedOption="transaction.Type">
+        <MudRadioGroup T="bool" @bind-SelectedOption="transaction.Type">
             <MudStack Row="true" Spacing="2">
                 <MudCard Outlined="true" Style="@GetTypeCardStyle(TransactionType.Einnahme)" Class="flex-grow-1">
                     <MudCardActionArea OnClick="@(() => transaction.Type = TransactionType.Einnahme)">
@@ -28,7 +28,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.TrendingUp" 
                                      Color="Color.Success" 
                                      Size="Size.Large"/>
-                            <MudRadio Option="@TransactionType.Einnahme" 
+                            <MudRadio T="bool" Option="@TransactionType.Einnahme" 
                                       Color="Color.Success">
                                 <MudText Typo="Typo.body1"><strong>Einnahme</strong></MudText>
                             </MudRadio>
@@ -42,7 +42,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.TrendingDown" 
                                      Color="Color.Error" 
                                      Size="Size.Large"/>
-                            <MudRadio Option="@TransactionType.Ausgabe" 
+                            <MudRadio T="bool" Option="@TransactionType.Ausgabe" 
                                       Color="Color.Error">
                                 <MudText Typo="Typo.body1"><strong>Ausgabe</strong></MudText>
                             </MudRadio>
@@ -56,7 +56,7 @@
                             <MudIcon Icon="@Icons.Material.Filled.SwapHoriz" 
                                      Color="Color.Info" 
                                      Size="Size.Large"/>
-                            <MudRadio Option="@TransactionType.Umbuchung" 
+                            <MudRadio T="bool" Option="@TransactionType.Umbuchung" 
                                       Color="Color.Info">
                                 <MudText Typo="Typo.body1"><strong>Umbuchung</strong></MudText>
                             </MudRadio>
@@ -188,7 +188,7 @@
                                 <MudSelectItem Value="@account.Id">
                                     <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                         <MudText>@account.Name</MudText>
-                                        <MudChip Size="Size.Small" Color="@GetAccountTypeColor(account.Type)">
+                                        <MudChip T="string" Size="Size.Small" Color="@GetAccountTypeColor(account.Type)">
                                             @GetAccountTypeText(account.Type)
                                         </MudChip>
                                     </MudStack>
@@ -220,7 +220,7 @@
                                 <MudText Typo="Typo.h6">Vorschau</MudText>
                             </CardHeaderContent>
                             <CardHeaderActions>
-                                <MudChip Color="@GetTransactionTypeColor(transaction.Type)" Variant="Variant.Filled">
+                                <MudChip T="string" Color="@GetTransactionTypeColor(transaction.Type)" Variant="Variant.Filled">
                                     @transaction.Type.ToString()
                                 </MudChip>
                             </CardHeaderActions>
@@ -247,7 +247,7 @@
                                 </MudItem>
                                 <MudItem xs="6" Style="text-align: right;">
                                     <MudText Typo="Typo.caption" Color="Color.Default">Kategorie</MudText>
-                                    <MudChip Size="Size.Small" Color="@GetCategoryColor(transaction.Category)">
+                                    <MudChip T="string" Size="Size.Small" Color="@GetCategoryColor(transaction.Category)">
                                         @GetCategoryText(transaction.Category)
                                     </MudChip>
                                 </MudItem>
