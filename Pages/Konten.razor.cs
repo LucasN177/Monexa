@@ -128,7 +128,7 @@ public partial class Konten : ComponentBase
         currentAccount = new Konto { IsActive = true, Currency = "EUR" };
         isEditMode = false;
         dialogVisible = true;
-        NavigationManager.NavigateTo("/konten/neu");
+        NavigationManager.NavigateTo("konten/neu");
     }
 
     private void OpenEditDialog(Konto account)
@@ -147,7 +147,7 @@ public partial class Konten : ComponentBase
         };
         isEditMode = true;
         dialogVisible = true;
-        NavigationManager.NavigateTo($"/konten/{account.Id}/bearbeiten");
+        NavigationManager.NavigateTo($"konten/{account.Id}/bearbeiten");
     }
 
     private void CloseDialog()
