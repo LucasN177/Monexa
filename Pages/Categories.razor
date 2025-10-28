@@ -1,0 +1,243 @@
+@page "/categories"
+@using System.ComponentModel.DataAnnotations
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h4" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-2" />
+        Kategorieverwaltung
+    </MudText>
+
+    <MudPaper Elevation="1" Class="pa-4 mt-4">
+        <MudGrid>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Gesamt Kategorien</MudText>
+                <MudText Typo="Typo.h6">@categories.Count</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Success">Einnahmen</MudText>
+                <MudText Typo="Typo.h6">@categories.Count(c => c.Type == "Einnahme")</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Error">Ausgaben</MudText>
+                <MudText Typo="Typo.h6">@categories.Count(c => c.Type == "Ausgabe")</MudText>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudText Typo="Typo.subtitle2" Color="Color.Info">Mit Budget</MudText>
+                <MudText Typo="Typo.h6">@categories.Count(c => c.MonthlyBudget.HasValue)</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+    
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudTextField @bind-Value="searchString" 
+                              Placeholder="Kategorie suchen..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              IconSize="Size.Medium"
+                              Immediate="true"
+                              DebounceInterval="300">
+                </MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudSelect @bind-Value="filterType" Label="Typ filtern" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Alle")">Alle</MudSelectItem>
+                    <MudSelectItem Value="@("Einnahme")">Einnahmen</MudSelectItem>
+                    <MudSelectItem Value="@("Ausgabe")">Ausgaben</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="4" Class="d-flex align-center justify-end">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Href="categories/create">
+                    Neue Kategorie
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Elevation="2">
+        <MudTable Items="@FilteredCategories" 
+                  Hover="true" 
+                  Breakpoint="Breakpoint.Sm"
+                  Dense="false"
+                  Loading="@isLoading"
+                  LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh>Icon</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Typ</MudTh>
+                <MudTh>Beschreibung</MudTh>
+                <MudTh>Budget</MudTh>
+                <MudTh>Transaktionen</MudTh>
+                <MudTh Style="text-align: right;">Aktionen</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Icon">
+                    <MudIcon Icon="@context.Icon" Color="@context.ColorValue" Size="Size.Large" />
+                </MudTd>
+                <MudTd DataLabel="Name">
+                    <MudText Typo="Typo.body2"><strong>@context.Name</strong></MudText>
+                </MudTd>
+                <MudTd DataLabel="Typ">
+                    <MudChip T="string" Color="@(context.Type == "Einnahme" ? Color.Success : Color.Error)" 
+                             Size="Size.Small" Icon="@(context.Type == "Einnahme" ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)">
+                        @context.Type
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Beschreibung">
+                    <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(context.Description) ? "-" : context.Description)</MudText>
+                </MudTd>
+                <MudTd DataLabel="Budget">
+                    @if (context.MonthlyBudget.HasValue)
+                    {
+                        <MudText Typo="Typo.body2">@context.MonthlyBudget.Value.ToString("C2")</MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default">-</MudText>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Transaktionen">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.TransactionCount</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Aktionen" Style="text-align: right;">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                   Color="Color.Primary" 
+                                   Size="Size.Small"
+                                   Href="@($"categories/edit/{context.Id}")" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                   Color="Color.Error" 
+                                   Size="Size.Small"
+                                   OnClick="@(() => OpenDeleteDialog(context))" />
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body1" Align="Align.Center" Class="py-4">
+                    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Class="mb-2" />
+                    <br />
+                    Keine Kategorien gefunden.
+                </MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
+
+<MudDialog @bind-IsVisible="deleteDialogVisible" Options="deleteDialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-2" Color="Color.Error" />
+            Kategorie löschen
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>
+            Möchten Sie die Kategorie <strong>@categoryToDelete?.Name</strong> wirklich löschen?
+        </MudText>
+        @if (categoryToDelete?.TransactionCount > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-3">
+                <strong>Achtung!</strong> Diese Kategorie hat @categoryToDelete.TransactionCount Transaktionen. 
+                Beim Löschen werden diese Transaktionen keiner Kategorie mehr zugeordnet.
+            </MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteDialog" Variant="Variant.Text">Abbrechen</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">Löschen</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<TransactionCategory> categories = new();
+    private string searchString = "";
+    private string filterType = "Alle";
+    private bool isLoading = false;
+    private bool deleteDialogVisible = false;
+    private TransactionCategory? categoryToDelete;
+
+    private DialogOptions deleteDialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        isLoading = true;
+        await Task.Delay(500);
+
+        categories = new List<TransactionCategory>
+        {
+            new() { Id = 1, Name = "Gehalt", Type = "Einnahme", Icon = Icons.Material.Filled.AttachMoney, Color = "Success", ColorValue = Color.Success, Description = "Monatliches Gehalt", TransactionCount = 12, MonthlyBudget = null },
+            new() { Id = 2, Name = "Lebensmittel", Type = "Ausgabe", Icon = Icons.Material.Filled.ShoppingCart, Color = "Primary", ColorValue = Color.Primary, Description = "Einkäufe im Supermarkt", TransactionCount = 45, MonthlyBudget = 400 },
+            new() { Id = 3, Name = "Restaurant", Type = "Ausgabe", Icon = Icons.Material.Filled.Restaurant, Color = "Warning", ColorValue = Color.Warning, Description = "Essen gehen", TransactionCount = 18, MonthlyBudget = 150 },
+            new() { Id = 4, Name = "Transport", Type = "Ausgabe", Icon = Icons.Material.Filled.DirectionsCar, Color = "Info", ColorValue = Color.Info, Description = "Auto, Benzin, ÖPNV", TransactionCount = 22, MonthlyBudget = 200 },
+            new() { Id = 5, Name = "Miete", Type = "Ausgabe", Icon = Icons.Material.Filled.Home, Color = "Error", ColorValue = Color.Error, Description = "Monatliche Miete", TransactionCount = 12, MonthlyBudget = 800 },
+            new() { Id = 6, Name = "Freelance", Type = "Einnahme", Icon = Icons.Material.Filled.Work, Color = "Success", ColorValue = Color.Success, Description = "Nebenverdienst", TransactionCount = 8, MonthlyBudget = null },
+            new() { Id = 7, Name = "Unterhaltung", Type = "Ausgabe", Icon = Icons.Material.Filled.Movie, Color = "Tertiary", ColorValue = Color.Tertiary, Description = "Streaming, Kino, Events", TransactionCount = 15, MonthlyBudget = 80 }
+        };
+
+        isLoading = false;
+    }
+
+    private IEnumerable<TransactionCategory> FilteredCategories
+    {
+        get
+        {
+            var filtered = categories.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                filtered = filtered.Where(c => 
+                    c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    (c.Description?.Contains(searchString, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            if (filterType != "Alle")
+            {
+                filtered = filtered.Where(c => c.Type == filterType);
+            }
+
+            return filtered.OrderBy(c => c.Name);
+        }
+    }
+
+    private void OpenDeleteDialog(TransactionCategory category)
+    {
+        categoryToDelete = category;
+        deleteDialogVisible = true;
+    }
+
+    private void CloseDeleteDialog()
+    {
+        deleteDialogVisible = false;
+        categoryToDelete = null;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (categoryToDelete != null)
+        {
+            categories.Remove(categoryToDelete);
+            CloseDeleteDialog();
+            StateHasChanged();
+        }
+    }
+
+    public class TransactionCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public string Type { get; set; } = "Ausgabe";
+        public string Icon { get; set; } = Icons.Material.Filled.Category;
+        public string Color { get; set; } = "Primary";
+        public Color ColorValue { get; set; } = MudBlazor.Color.Primary;
+        public decimal? MonthlyBudget { get; set; }
+        public int TransactionCount { get; set; }
+    }
+}
